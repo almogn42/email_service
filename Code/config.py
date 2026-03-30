@@ -24,8 +24,11 @@ class Settings(BaseSettings):
     SMTP_USERNAME: str = ""                     # Login username for the SMTP server
     SMTP_PASSWORD: str = ""                     # Login password (use app-password for Gmail)
     SMTP_FROM_EMAIL: str = ""                   # "From" address shown to recipients
-    CUSTOM_PPORT_SSL: bool = 0
     
+    # ── Custom SSL CA / Verification Settings ──
+    SMTP_SSL_VERIFY: bool = True                # Set to False to disable SSL certificate verification
+    SMTP_CA_CERT_PATH: str = ""                 # Path to a custom CA certificate file (e.g. /path/to/org_ca.pem)
+
     # ── General Service Settings ───────────────────────────────────
     SERVICE_NAME: str = "Email Service"         # Display name used in /status and root
     DEBUG: bool = False                         # Enable debug logging when True

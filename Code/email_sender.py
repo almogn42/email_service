@@ -97,15 +97,29 @@ class SMTPEmailSender:
             # ── Create SSL context for encrypted connection ────────
             ssl_context = ssl.create_default_context()
 
+            # 1. Disable Verification (Ignore cert errors)
+            if not self.settings.SMTP_SSL_VERIFY:
+                logger.warning("SMTP SSL verification is DISABLED (SMTP_SSL_VERIFY=False)")
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+                
+            # 2. Use Custom CA File (Verify against organization CA)
+            elif self.settings.SMTP_CA_CERT_PATH:
+                logger.info(f"Loading custom CA cert from {self.settings.SMTP_CA_CERT_PATH}")
+                ssl_context.load_verify_locations(cafile=self.settings.SMTP_CA_CERT_PATH)
+
+
             # ── Mode: STARTTLS (upgrade plain → encrypted) ─────────
             if tls_mode == "starttls":
                 logger.info(f"Using STARTTLS on port {self.smtp_port}")
                 async with aiosmtplib.SMTP(
                     hostname=self.smtp_server,
                     port=self.smtp_port,
-                    timeout=10
+                    timeout=10,
+                    start_tls=True,
+                    tls_context=ssl_context,
+                    validate_certs=self.settings.SMTP_SSL_VERIFY
                 ) as smtp:
-                    await smtp.starttls(tls_context=ssl_context)
                     if self.smtp_username:
                         logger.info(f"Logging in as {self.smtp_username}")
                         await smtp.login(self.smtp_username, self.smtp_password)
@@ -120,7 +134,8 @@ class SMTPEmailSender:
                     port=self.smtp_port,
                     timeout=10,
                     use_tls=True,
-                    tls_context=ssl_context
+                    tls_context=ssl_context,
+                    validate_certs=self.settings.SMTP_SSL_VERIFY
                 ) as smtp:
                     if self.smtp_username:
                         logger.info(f"Logging in as {self.smtp_username}")

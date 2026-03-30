@@ -120,6 +120,11 @@ curl -u admin:changeme http://localhost:8000/tokens
 
 ## Troubleshooting
 
+### SSL/TLS Certificate Verification Errors
+- If connecting to an internal/organization SMTP server with a custom or self-signed certificate, you may get an `[SSL: CERTIFICATE_VERIFY_FAILED]` error.
+- **Fix 1 (Preferred):** Provide the path to your organization's CA certificate in `.env` using `SMTP_CA_CERT_PATH=/path/to/cert.pem`
+- **Fix 2 (Testing):** Set `SMTP_SSL_VERIFY=False` in your `.env` to ignore certificate errors.
+
 ### "SMTP Authentication failed"
 - Verify credentials in `.env`
 - For Gmail: Use app password, not regular password

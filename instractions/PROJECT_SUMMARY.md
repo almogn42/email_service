@@ -41,7 +41,7 @@ The FastAPI application entry point containing:
 
 #### `config.py` (Configuration)
 Centralized configuration management with:
-- SMTP settings (server, port, credentials)
+- SMTP settings (server, port, credentials, custom CA/SSL validation)
 - SMS gateway settings (API URL, client ID/secret, scope, app ID, sender name)
 - SMS payload template (configurable JSON structure)
 - Basic auth users dictionary (auto-hashed on startup)
@@ -69,6 +69,7 @@ Pydantic models for type safety:
 Async SMTP email sending:
 - `SMTPEmailSender` class with async email sending
 - Support for STARTTLS (port 587) and implicit SSL (port 465)
+- Custom CA support and configurable SSL certificate validation
 - CC and BCC recipients
 - HTML and plain text email support
 - Comprehensive error handling
@@ -210,8 +211,14 @@ Visit: http://localhost:8000/docs (Swagger UI)
 
 ```bash
 docker build -t email-sms-service .
+
+# Standard run:
 docker run -p 8000:8000 --env-file .env email-sms-service
-# or
+
+# Run with custom CA Certificate mounted (if using SMTP_CA_CERT_PATH):
+docker run -p 8000:8000 --env-file .env -v /local/cert.pem:/app/cert.pem email-sms-service
+
+# or via Docker Compose:
 docker-compose up
 ```
 

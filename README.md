@@ -12,6 +12,7 @@ A FastAPI-based microservice for sending **emails** and **SMS messages** via web
 - Support for HTML and plain text emails
 - CC and BCC recipients
 - Async SMTP for high performance
+- Support for custom CA SSL certificates & bypassing validation for internal networks
 
 ✅ **SMS Sending**
 - External SMS gateway integration via HTTP
@@ -292,6 +293,8 @@ SMTP_PORT=587
 SMTP_USERNAME=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
 SMTP_FROM_EMAIL=your-email@gmail.com
+SMTP_SSL_VERIFY=True                       # Optional: Set False to bypass SSL validation
+SMTP_CA_CERT_PATH=                         # Optional: Path to custom .pem/.crt CA file
 
 # SMS Configuration
 SMS_API_URL=http://your-sms-gateway/sms-api
@@ -339,11 +342,14 @@ Build and run:
 docker build -t email-sms-service .
 docker run -p 8000:8000 --env-file .env email-sms-service
 ```
+> **Custom SSL Certificates**: If using a custom CA file (`SMTP_CA_CERT_PATH`), mount the certificate into the container:
+> `docker run -p 8000:8000 --env-file .env -v /local/path/to/cert.pem:/app/cert.pem email-sms-service` and set `SMTP_CA_CERT_PATH=/app/cert.pem` in `.env`.
 
 Or use Docker Compose:
 ```bash
 docker-compose up
 ```
+> **Note**: If using Docker Compose with custom SSL, uncomment the certificate volume mount in `docker-compose.yml`.
 
 ---
 

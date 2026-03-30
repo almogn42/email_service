@@ -12,6 +12,8 @@ services:
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - SMTP_SSL_VERIFY=${SMTP_SSL_VERIFY:-True}
+      - SMTP_CA_CERT_PATH=${SMTP_CA_CERT_PATH}
       - SMS_API_URL=${SMS_API_URL}
       - SMS_CLIENT_ID=${SMS_CLIENT_ID}
       - SMS_APP_ID=${SMS_APP_ID}
@@ -23,6 +25,8 @@ services:
       - .env
     volumes:
       - ./logs:/app/logs
+      # Uncomment to mount custom CA certificate if SMTP_CA_CERT_PATH=/app/cert.pem:
+      # - /local/path/to/org_ca.pem:/app/cert.pem:ro
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]

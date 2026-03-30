@@ -10,7 +10,7 @@ def get_sms():
     recipient = data["recipient"]
     text = data["smsMessageText"]
     recipient_type = data["recipientType"]
-    print(f"sms recived!! /n{data}")
+    print(f"sms recived!! \n {data['recipient']}")
     # result = requests.post("http://localhost:8000/send-sms", json=data)
     # return result.json()
     return "sms recived!!"

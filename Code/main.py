@@ -14,10 +14,11 @@ from typing import Optional
 from datetime import datetime
 
 from config import get_settings
-from models import SendEmailRequest, SendEmailResponse, SendSmsRequest, SendSmsResponse, ServiceStatus
+from models import SendEmailRequest, SendEmailResponse, SendSmsRequest, SendSmsResponse, ServiceStatus, UploadContactsRequest
 from email_sender import email_sender
 from sms_sender import sms_sender
 from auth import verify_basic_auth, verify_oauth_token
+import owner_contacts
 
 # ── Logging configuration ─────────────────────────────────────────
 logging.basicConfig(
@@ -118,10 +119,17 @@ async def send_email(
     ```
     """
     logger.info(f"Email send request from user: {username}")
-    logger.info(f"Recipients: {request.to}")
+    
+    # Resolve recipients
+    try:
+        to_addresses = owner_contacts.get_owner_emails(request.owner) if request.owner else request.to
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    logger.info(f"Resolved Recipients: {to_addresses}")
     
     result = await email_sender.send_email(
-        to_addresses=request.to,
+        to_addresses=to_addresses,
         subject=request.subject,
         body=request.body,
         cc_addresses=request.cc,
@@ -144,6 +152,7 @@ async def send_email(
         message_id=result.get("message_id"),
         timestamp=result.get("timestamp")
     )
+    
 
 @app.post("/send-email/token", response_model=SendEmailResponse, tags=["Email"])
 async def send_email_with_token(
@@ -224,28 +233,43 @@ async def send_sms(
     ```
     """
     logger.info(f"SMS send request from user: {username}")
-    logger.info(f"Recipient: {request.recipient}")
     
-    result = await sms_sender.send_sms(
-        recipient=request.recipient,
-        text=request.text,
-        recipient_type=request.recipient_type
-    )
+    # Resolve recipients
+    try:
+        recipients = owner_contacts.get_owner_phones(request.owner) if request.owner else [request.recipient]
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    logger.info(f"Resolved SMS Recipients: {recipients}")
     
-    if not result["success"]:
-        logger.error(f"Failed to send SMS: {result['message']}")
+    success_count = 0
+    last_message_id = None
+    errors = []
+    
+    for rec in recipients:
+        result = await sms_sender.send_sms(
+            recipient=rec,
+            text=request.text,
+            recipient_type=request.recipient_type
+        )
+        if result["success"]:
+            success_count += 1
+            last_message_id = result.get("message_id")
+        else:
+            errors.append(f"Failed for {rec}: {result['message']}")
+            logger.error(f"Failed to send SMS to {rec}: {result['message']}")
+            
+    if success_count == 0:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=result["message"]
+            detail=f"Failed to send SMS. Errors: {'; '.join(errors)}"
         )
     
-    logger.info(f"SMS sent successfully. Message ID: {result.get('message_id')}")
-    
     return SendSmsResponse(
-        success=result["success"],
-        message=result["message"],
-        message_id=result.get("message_id"),
-        timestamp=result.get("timestamp")
+        success=True,
+        message=f"SMS sent successfully to {success_count}/{len(recipients)} recipients",
+        message_id=last_message_id,
+        timestamp=datetime.utcnow().isoformat()
     )
 
 @app.post("/send-sms/token", response_model=SendSmsResponse, tags=["SMS"])
@@ -269,33 +293,73 @@ async def send_sms_with_token(
     ```
     """
     logger.info(f"SMS send request with token: {token[:10]}...")
-    logger.info(f"Recipient: {request.recipient}")
     
-    result = await sms_sender.send_sms(
-        recipient=request.recipient,
-        text=request.text,
-        recipient_type=request.recipient_type
-    )
+    # Resolve recipients
+    try:
+        recipients = owner_contacts.get_owner_phones(request.owner) if request.owner else [request.recipient]
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    logger.info(f"Resolved SMS Recipients: {recipients}")
     
-    if not result["success"]:
-        logger.error(f"Failed to send SMS: {result['message']}")
+    success_count = 0
+    last_message_id = None
+    errors = []
+    
+    for rec in recipients:
+        result = await sms_sender.send_sms(
+            recipient=rec,
+            text=request.text,
+            recipient_type=request.recipient_type
+        )
+        if result["success"]:
+            success_count += 1
+            last_message_id = result.get("message_id")
+        else:
+            errors.append(f"Failed for {rec}: {result['message']}")
+            logger.error(f"Failed to send SMS to {rec}: {result['message']}")
+            
+    if success_count == 0:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=result["message"]
+            detail=f"Failed to send SMS. Errors: {'; '.join(errors)}"
         )
     
-    logger.info(f"SMS sent successfully. Message ID: {result.get('message_id')}")
-    
     return SendSmsResponse(
-        success=result["success"],
-        message=result["message"],
-        message_id=result.get("message_id"),
-        timestamp=result.get("timestamp")
+        success=True,
+        message=f"SMS sent successfully to {success_count}/{len(recipients)} recipients",
+        message_id=last_message_id,
+        timestamp=datetime.utcnow().isoformat()
     )
 
 # ============================================================================
 # Admin Endpoints
 # ============================================================================
+
+@app.post("/upload-contacts", tags=["Admin"])
+async def upload_contacts(
+    request: UploadContactsRequest,
+    username: str = Depends(verify_basic_auth)
+):
+    """Upload and overwrite the owners contact list."""
+    if username != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the admin user can access this endpoint"
+        )
+    owner_contacts.save_contacts(request.model_dump())
+    return {"message": "Contacts saved successfully"}
+
+@app.get("/contacts", tags=["Admin"])
+async def get_contacts(username: str = Depends(verify_basic_auth)):
+    """Retrieve the current owners contact list."""
+    if username != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the admin user can access this endpoint"
+        )
+    return owner_contacts.get_all_contacts()
+
 
 @app.get("/tokens", tags=["Admin"])
 async def get_tokens(username: str = Depends(verify_basic_auth)):
@@ -356,3 +420,40 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # ============================================================================
 # Root Endpoint
+
+@app.get("/", tags=["Root"])
+async def root():
+    """Root endpoint with API documentation link."""
+    return {
+        "name": settings.SERVICE_NAME,
+        "version": "1.0.0",
+        "docs": "/docs",
+        "redoc": "/redoc",
+        "message": "Welcome to Email Service API"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    # This block allows you to run the server via "python main.py"
+    uvicorn.run(
+        "main:app",
+        # app,
+        host="0.0.0.0",
+        port=8000,
+        log_level="info",
+        reload=True
+    )
+
+
+
+# @app.get("/", tags=["Root"])
+# async def root():
+#     return {
+#         "message": "Email & SMS Service API is running.", 
+#         "docs_url": "/docs"
+#     }
+
+# if __name__ == "__main__":
+#     import uvicorn
+#     # This block allows you to run the server via "python main.py"
+#     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

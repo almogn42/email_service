@@ -33,6 +33,7 @@ class SMTPEmailSender:
         self.smtp_username = self.settings.SMTP_USERNAME
         self.smtp_password = self.settings.SMTP_PASSWORD
         self.from_email = self.settings.SMTP_FROM_EMAIL
+        self.smtp_tls_mode = self.settings.SMTP_TLS_MODE.lower()
     
     async def send_email(
         self,
@@ -81,39 +82,68 @@ class SMTPEmailSender:
             
             logger.info(f"Connecting to {self.smtp_server}:{self.smtp_port}")
             
+            # ── Determine TLS mode ─────────────────────────────────
+            tls_mode = self.smtp_tls_mode
+            if tls_mode == "auto":
+                if self.smtp_port == 587:
+                    tls_mode = "starttls"
+                elif self.smtp_port == 465:
+                    tls_mode = "implicit"
+                elif self.smtp_port == 25:
+                    tls_mode = "none"
+                else:
+                    raise ValueError(f"Cannot auto-determine TLS over port {self.smtp_port}. Please set SMTP_TLS_MODE explicitly.")
+
             # ── Create SSL context for encrypted connection ────────
             ssl_context = ssl.create_default_context()
-            
-            # ── Port 587: STARTTLS (upgrade plain → encrypted) ─────
-            if self.smtp_port == 587:
-                logger.info("Using STARTTLS on port 587")
+
+            # ── Mode: STARTTLS (upgrade plain → encrypted) ─────────
+            if tls_mode == "starttls":
+                logger.info(f"Using STARTTLS on port {self.smtp_port}")
                 async with aiosmtplib.SMTP(
                     hostname=self.smtp_server,
                     port=self.smtp_port,
                     timeout=10
                 ) as smtp:
                     await smtp.starttls(tls_context=ssl_context)
-                    logger.info(f"Logging in as {self.smtp_username}")
-                    await smtp.login(self.smtp_username, self.smtp_password)
+                    if self.smtp_username:
+                        logger.info(f"Logging in as {self.smtp_username}")
+                        await smtp.login(self.smtp_username, self.smtp_password)
                     logger.info(f"Sending email to {len(all_recipients)} recipients")
                     await smtp.sendmail(self.from_email, all_recipients, message.as_string())
             
-            # ── Port 465: Implicit SSL (encrypted from the start) ──
-            elif self.smtp_port == 465:
-                logger.info("Using SSL on port 465")
+            # ── Mode: Implicit SSL (encrypted from the start) ──────
+            elif tls_mode == "implicit":
+                logger.info(f"Using implicit SSL on port {self.smtp_port}")
                 async with aiosmtplib.SMTP(
                     hostname=self.smtp_server,
                     port=self.smtp_port,
                     timeout=10,
-                    use_tls=True
+                    use_tls=True,
+                    tls_context=ssl_context
                 ) as smtp:
-                    logger.info(f"Logging in as {self.smtp_username}")
-                    await smtp.login(self.smtp_username, self.smtp_password)
+                    if self.smtp_username:
+                        logger.info(f"Logging in as {self.smtp_username}")
+                        await smtp.login(self.smtp_username, self.smtp_password)
                     logger.info(f"Sending email to {len(all_recipients)} recipients")
                     await smtp.sendmail(self.from_email, all_recipients, message.as_string())
             
+            # ── Mode: None (plain text, no encryption) ─────────────
+            elif tls_mode == "none":
+                logger.info(f"Using NO TLS (plain text) on port {self.smtp_port}")
+                async with aiosmtplib.SMTP(
+                    hostname=self.smtp_server,
+                    port=self.smtp_port,
+                    timeout=10
+                ) as smtp:
+                    if self.smtp_username:
+                        logger.warning(f"Logging in over plain text (INSECURE) as {self.smtp_username}")
+                        await smtp.login(self.smtp_username, self.smtp_password)
+                    logger.info(f"Sending email to {len(all_recipients)} recipients")
+                    await smtp.sendmail(self.from_email, all_recipients, message.as_string())
+
             else:
-                raise ValueError(f"Unsupported SMTP port: {self.smtp_port}")
+                raise ValueError(f"Unsupported SMTP_TLS_MODE: {tls_mode}")
             
             # Generate a local message ID (SMTP server may assign its own)
             message_id = str(uuid.uuid4())

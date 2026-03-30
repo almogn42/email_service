@@ -19,10 +19,12 @@ class Settings(BaseSettings):
 
     # ── SMTP (Email) Settings ──────────────────────────────────────
     SMTP_SERVER: str = "smtp.gmail.com"         # SMTP server hostname
-    SMTP_PORT: int = 587                        # 587 = STARTTLS, 465 = implicit SSL
+    SMTP_PORT: int = 587                        # 587 = STARTTLS, 465 = implicit SSL, 25 = plain text
+    SMTP_TLS_MODE: str = "auto"                 # "starttls", "implicit", "none", or "auto"
     SMTP_USERNAME: str = ""                     # Login username for the SMTP server
     SMTP_PASSWORD: str = ""                     # Login password (use app-password for Gmail)
     SMTP_FROM_EMAIL: str = ""                   # "From" address shown to recipients
+    CUSTOM_PPORT_SSL: bool = 0
     
     # ── General Service Settings ───────────────────────────────────
     SERVICE_NAME: str = "Email Service"         # Display name used in /status and root

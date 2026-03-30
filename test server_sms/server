@@ -1,0 +1,19 @@
+import flask 
+import json 
+import requests
+
+app = flask.Flask(__name__)
+#  http://localhost:8080/sms-api.com
+@app.route("/sms-api", methods=["POST"])
+def get_sms():
+    data = flask.request.json
+    recipient = data["recipient"]
+    text = data["smsMessageText"]
+    recipient_type = data["recipientType"]
+    print(f"sms recived!! /n{data}")
+    # result = requests.post("http://localhost:8000/send-sms", json=data)
+    # return result.json()
+    return "sms recived!!"
+
+if __name__ == "__main__":
+    app.run(debug=True, port=8080)

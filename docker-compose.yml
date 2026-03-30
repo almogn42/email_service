@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  email-sms-service:
+    image: email-sms-service:latest
+    # build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - SMS_API_URL=${SMS_API_URL}
+      - SMS_CLIENT_ID=${SMS_CLIENT_ID}
+      - SMS_APP_ID=${SMS_APP_ID}
+      - SMS_SENDER_NAME=${SMS_SENDER_NAME}
+      - DEBUG=False
+      - 'BASIC_AUTH_USERS={"admin": "changeme"}'
+      - 'API_TOKENS=["your-api-token-here"]'
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s

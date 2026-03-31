@@ -49,6 +49,8 @@ API_TOKENS=["my-secure-token-123", "another-token"]
 > **Note:** Plain-text passwords in `BASIC_AUTH_USERS` are automatically hashed (PBKDF2-SHA256) on first startup and persisted back to `.env`.
 
 ## Step 5: Start the Service
+
+### Option A: Using Python directly
 ```bash
 python main.py
 ```
@@ -56,6 +58,25 @@ python main.py
 Expected output:
 ```
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+```
+
+### Option B: Using the Compiled Docker Image
+If you prefer not to install Python dependencies, you can start the service using the provided Docker image:
+
+1. Load the image tarball into Docker:
+```bash
+docker load -i "Compiled image/email-sms-service_1.0.2_image.tar"
+```
+
+2. Run the Docker container in the background (requires your `.env` to be configured):
+```bash
+docker run -d \
+  --name email-sms-service \
+  -p 8000:8000 \
+  -p 25:25 \
+  --env-file .env \
+  -v ./logs:/app/logs \
+  email-sms-service:1.0.2
 ```
 
 ## Step 6: Test the Service

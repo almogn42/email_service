@@ -337,10 +337,30 @@ SMTP_PASSWORD=your-sendgrid-api-key
 
 ## Docker Deployment
 
+### Option A: Building from scratch
 Build and run:
 ```bash
 docker build -t email-sms-service .
 docker run -p 8000:8000 --env-file .env email-sms-service
+```
+
+### Option B: Running from the compiled image tarball
+If you have the compiled image file, you can load and run it without building:
+
+1. Load the image into Docker:
+```bash
+docker load -i "Compiled image/email-sms-service_1.0.2_image.tar"
+```
+
+2. Run the container (make sure your `.env` file is ready):
+```bash
+docker run -d \
+  --name email-sms-service \
+  -p 8000:8000 \
+  -p 25:25 \
+  --env-file .env \
+  -v ./logs:/app/logs \
+  email-sms-service:1.0.2
 ```
 > **Custom SSL Certificates**: If using a custom CA file (`SMTP_CA_CERT_PATH`), mount the certificate into the container:
 > `docker run -p 8000:8000 --env-file .env -v /local/path/to/cert.pem:/app/cert.pem email-sms-service` and set `SMTP_CA_CERT_PATH=/app/cert.pem` in `.env`.

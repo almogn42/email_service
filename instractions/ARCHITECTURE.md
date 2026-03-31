@@ -478,25 +478,3 @@ settings = get_settings()  # Cached settings instance
 ```
 
 ---
-
-## Scaling Considerations
-
-### Horizontal Scaling
-- Deploy multiple FastAPI instances
-- Use load balancer (Nginx, HAProxy)
-- Stateless design (no session data)
-
-### Vertical Scaling
-- Increase SMTP connection pool
-- Optimize async workers
-- Use production ASGI server (Gunicorn + Uvicorn)
-
-### Database Addition
-- PostgreSQL for email history
-- Redis for rate limiting
-- Cache SMTP connections
-
-### Monitoring
-- Prometheus metrics endpoints
-- Centralized logging (ELK, CloudWatch)
-- Error tracking (Sentry, Rollbar)

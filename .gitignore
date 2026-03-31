@@ -5,5 +5,7 @@ venv/
 .env
 .vscode
 "Tests_and_examples/app password gmail (main account).txt"
-Compiled image\email-sms-service_1.0.2_image.tar
+"Compiled image/email-sms-service_1.0.2_image.tar"
+
+Compiled image/email-sms-service_1.0.2_image.zip
 Compiled image/email-sms-service_1.0.2_image.tar

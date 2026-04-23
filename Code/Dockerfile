@@ -12,6 +12,10 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# incasse there is a problem with certificates becouse of work comp
+# COPY requirements.txt .
+# RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --no-cache-dir -r requirements.txt
+
 # Copy application code
 COPY . .
 

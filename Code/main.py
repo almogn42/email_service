@@ -28,10 +28,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ── FastAPI application instance ──────────────────────────────────
+version = "1.0.3"
+
 app = FastAPI(
     title="Email & SMS Service API",
     description="Service to send emails and SMS via web requests with Basic Auth and OAuth support",
-    version="1.0.0"
+    version=version
 )
 
 # ── CORS Middleware ────────────────────────────────────────────────
@@ -86,7 +88,7 @@ async def get_status(username: str = Depends(verify_basic_auth)):
     return ServiceStatus(
         status="operational",
         service=settings.SERVICE_NAME,
-        version="1.0.0"
+        version=version
     )
 
 # ============================================================================
@@ -426,7 +428,7 @@ async def root():
     """Root endpoint with API documentation link."""
     return {
         "name": settings.SERVICE_NAME,
-        "version": "1.0.0",
+        "version": version,
         "docs": "/docs",
         "redoc": "/redoc",
         "message": "Welcome to Email Service API"

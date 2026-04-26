@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     # Placeholders: {app_id}, {sender_name}, {text}, {recipient}, {recipient_type}
     SMS_PAYLOAD_TEMPLATE: str = '{{"applicationId": "{app_id}", "smsSenderName": "{sender_name}", "smsMessageText": "{text}", "recipient": "{recipient}", "recipientType": {recipient_type}}}'
     
+    # ── SMS SSL / Verification Settings ────────────────────────────
+    SMS_SSL_VERIFY: bool = True                 # Set to False to disable SSL certificate verification for SMS API
+    SMS_CA_CERT_PATH: str = ""                  # Path to a custom CA certificate file for SMS API
+
     # ── Basic Auth Users ───────────────────────────────────────────
     # Dictionary mapping username → password (plain-text or hashed).
     # Plain-text passwords are automatically hashed on first startup.

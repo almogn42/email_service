@@ -13,7 +13,7 @@ import httpx
 import logging
 import json
 import uuid
-import ssl
+
 from datetime import datetime
 from config import get_settings
 
@@ -83,27 +83,15 @@ class SmsSender:
             payload = json.loads(payload_str)
             logger.info(f"Sending SMS to {recipient} via {self.api_url}")
             
-            # ── Create SSL context for the SMS gateway ─────────────
-            ssl_context = ssl.create_default_context()
-
-            # 1. Disable Verification (Ignore cert errors)
+            # ── Determine SSL verification for httpx ────────────────
+            # httpx accepts: True (system CAs), False (skip), or a
+            # file-path string pointing to a custom CA bundle.
             if not self.settings.SMS_SSL_VERIFY:
                 logger.warning("SMS SSL verification is DISABLED (SMS_SSL_VERIFY=False)")
-                ssl_context.check_hostname = False
-                ssl_context.verify_mode = ssl.CERT_NONE
-
-            # 2. Use Custom CA File (Verify against organization CA)
-            elif self.settings.SMS_CA_CERT_PATH:
-                logger.info(f"Loading custom CA cert from {self.settings.SMS_CA_CERT_PATH}")
-                ssl_context.load_verify_locations(cafile=self.settings.SMS_CA_CERT_PATH)
-
-            # Determine the verify parameter for httpx:
-            #   - False  → skip all TLS checks
-            #   - ssl_context → use the custom context
-            if not self.settings.SMS_SSL_VERIFY:
                 verify_param = False
             elif self.settings.SMS_CA_CERT_PATH:
-                verify_param = ssl_context
+                logger.info(f"Using custom CA cert: {self.settings.SMS_CA_CERT_PATH}")
+                verify_param = self.settings.SMS_CA_CERT_PATH
             else:
                 verify_param = True  # default system CA bundle
 

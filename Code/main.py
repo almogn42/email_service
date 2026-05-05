@@ -10,6 +10,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 import logging
+import os
+from logging.handlers import RotatingFileHandler
 from typing import Optional
 from datetime import datetime
 
@@ -20,10 +22,41 @@ from sms_sender import sms_sender
 from auth import verify_basic_auth, verify_oauth_token
 import owner_contacts
 
+
+# Cached settings instance (shared across all handlers)
+settings = get_settings()
+# making Debug Mode maching Log Level.
+if settings.DEBUG:
+    settings.LOG_LEVEL = "debug"
+
 # ── Logging configuration ─────────────────────────────────────────
+log_dir = "logs"
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_file = os.path.join(log_dir, "app.log")
+
+# Setup File Handler
+file_handler = RotatingFileHandler(
+    log_file, 
+    maxBytes=5*1024*1024,  # 5MB
+    backupCount=5,
+    encoding='utf-8'
+)
+file_handler.setFormatter(log_formatter)
+# file_handler.setLevel(logging.INFO)
+
+# Setup Console Handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+# console_handler.setLevel(logging.INFO)
+
+# Apply to root logger
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    # level=logging.INFO,
+    level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO),
+    handlers=[file_handler, console_handler]
 )
 logger = logging.getLogger(__name__)
 
@@ -67,8 +100,8 @@ app.add_middleware(
     allow_headers=["*"],            # Or restrict to ["Authorization", "Content-Type"]
 )
 
-# Cached settings instance (shared across all handlers)
-settings = get_settings()
+# # Cached settings instance (shared across all handlers)
+# settings = get_settings()
 
 # ============================================================================
 # Health Check & Status Endpoints
@@ -442,8 +475,10 @@ if __name__ == "__main__":
         # app,
         host="0.0.0.0",
         port=8000,
-        log_level="info",
-        reload=True
+        # log_level="info",
+        # reload=True``,
+        log_level=settings.LOG_LEVEL,
+        reload=settings.DEBUG
     )
 
 

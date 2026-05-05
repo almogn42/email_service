@@ -12,6 +12,7 @@ def get_sms():
     recipient_type = data["recipientType"]
     print(f"sms recived!! \n {data['recipient']}")
     print(data)
+    flask.request.headers
     # result = requests.post("http://localhost:8000/send-sms", json=data)
     # return result.json()
     return "sms recived!!"

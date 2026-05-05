@@ -63,12 +63,13 @@ def get_owner_emails(owner_name: str) -> List[str]:
 
     if group is None:
         raise ValueError(f"Owner group '{owner_name}' not found in contacts file.")
-
+    
     emails = [
         contact["email"]
         for contact in group.values()
         if isinstance(contact, dict) and contact.get("email")
     ]
+    logger.debug(f"email list from owner: {emails}")
 
     if not emails:
         raise ValueError(f"No email addresses found for owner group '{owner_name}'.")

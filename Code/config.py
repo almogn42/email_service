@@ -8,6 +8,7 @@ Handles automatic password hashing for basic auth users on startup.
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
 from functools import lru_cache
+from typing import Literal
 import json
 import os
 
@@ -20,7 +21,9 @@ class Settings(BaseSettings):
     # ── SMTP (Email) Settings ──────────────────────────────────────
     SMTP_SERVER: str = "smtp.gmail.com"         # SMTP server hostname
     SMTP_PORT: int = 587                        # 587 = STARTTLS, 465 = implicit SSL, 25 = plain text
-    SMTP_TLS_MODE: str = "auto"                 # "starttls", "implicit", "none", or "auto"
+    #SMTP_TLS_MODE: str = "auto"                # "starttls", "implicit", "none", or "auto"
+    # TKS Mode For SMPTP Options -> "starttls", "implicit", "none", or "auto"
+    SMTP_TLS_MODE: Literal["starttls", "implicit", "none", "auto"] = "auto"   # "starttls", "implicit", "none", or "auto"
     SMTP_USERNAME: str = ""                     # Login username for the SMTP server
     SMTP_PASSWORD: str = ""                     # Login password (use app-password for Gmail)
     SMTP_FROM_EMAIL: str = ""                   # "From" address shown to recipients
@@ -32,6 +35,7 @@ class Settings(BaseSettings):
     # ── General Service Settings ───────────────────────────────────
     SERVICE_NAME: str = "Email Service"         # Display name used in /status and root
     DEBUG: bool = False                         # Enable debug logging when True
+    LOG_LEVEL: Literal["info", "error", "debug"] = "info"   # Enable debug logging when True
     
     # ── SMS Gateway Settings ───────────────────────────────────────
     SMS_API_URL: str = "http://localhost:8080/sms-api"  # External SMS API endpoint

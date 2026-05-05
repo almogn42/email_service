@@ -13,6 +13,7 @@ import httpx
 import logging
 import json
 import uuid
+from ssl import SSLError
 
 from datetime import datetime
 from config import get_settings
@@ -64,11 +65,12 @@ class SmsSender:
             # ── Build the JSON payload from the template ───────────
             # Escape double-quotes in dynamic values to prevent
             # broken JSON when the template is formatted.
-            safe_text = text.replace('"', '\\"')
+            # safe_text = text.replace('"', '\\"')
+            safe_text = text.replace('\\', '\\\\').replace('"', '\\"')
             safe_sender = self.sender_name.replace('"', '\\"')
             safe_app_id = self.app_id.replace('"', '\\"')
             safe_recipient = recipient.replace('"', '\\"')
-            logger.info(f"{safe_text} | {safe_sender} | {safe_app_id}| {safe_recipient}| {recipient_type}")
+            logger.debug(f"{safe_text} | {safe_sender} | {safe_app_id}| {safe_recipient}| {recipient_type}")
             
             # Format the template string with sanitised values
             payload_str = self.payload_template.format(
@@ -80,6 +82,7 @@ class SmsSender:
             )
             
             # Parse the formatted string into a Python dict
+            logger.debug(f"Payload: {payload_str}")
             payload = json.loads(payload_str)
             logger.info(f"Sending SMS to {recipient} via {self.api_url}")
             
@@ -96,6 +99,7 @@ class SmsSender:
                 verify_param = True  # default system CA bundle
 
             # ── Send the HTTP request to the SMS gateway ───────────
+            logger.debug(f"Verify: {verify_param}")
             async with httpx.AsyncClient(verify=verify_param) as client:
                 response = await client.post(
                     self.api_url,
@@ -109,7 +113,7 @@ class SmsSender:
                 
                 # Generate a local message ID (replace if the API returns one)
                 message_id = str(uuid.uuid4())
-                logger.info(f"✅ SMS sent successfully. Message ID: {message_id}")
+                logger.info(f" SMS sent successfully. Message ID: {message_id}")
                 
                 return {
                     "success": True,
@@ -119,14 +123,36 @@ class SmsSender:
                 }
                 
         except httpx.HTTPStatusError as error:
-            logger.error(f"❌ SMS API HTTP error: {error.response.status_code} - {error.response.text}")
+            logger.error(f" SMS API HTTP error: {error.response.status_code} - {error.response.text}")
             return {
                 "success": False,
                 "message": f"SMS API error: {error.response.status_code}",
                 "timestamp": datetime.utcnow().isoformat()
             }
+        except httpx.ConnectError as error:
+            if isinstance(error.__cause__, SSLError):
+                logger.error(f" SMS API SSL error: {error}")
+                return {
+                    "success": False,
+                    "message": f"SMS API SSL error: {error}",
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            else:
+                logger.error(f" SMS API connection error: {error}")
+                return {
+                    "success": False,
+                    "message": f"SMS API connection error: {error}",
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+        except httpx.InvalidURL as error:
+            logger.error(f" SMS API URL error: {error}")
+            return {
+                "success": False,
+                "message": f"SMS API URL error: {error}",
+                "timestamp": datetime.utcnow().isoformat()
+            }
         except Exception as error:
-            logger.error(f"❌ Unexpected error sending SMS: {error}", exc_info=True)
+            logger.error(f" Unexpected error sending SMS: {error}", exc_info=True)
             return {
                 "success": False,
                 "message": f"Error: {str(error)}",

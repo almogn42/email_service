@@ -108,7 +108,9 @@ class SMTPEmailSender:
                 logger.info(f"Loading custom CA cert from {self.settings.SMTP_CA_CERT_PATH}")
                 ssl_context.load_verify_locations(cafile=self.settings.SMTP_CA_CERT_PATH)
 
-
+            logger.debug(f"SMTP_TLS_MODE: {tls_mode} | SMTP_SSL_VERIFY: {self.settings.SMTP_SSL_VERIFY} | SMTP_CA_CERT_PATH: {self.settings.SMTP_CA_CERT_PATH} | SMTP_CA_CERT_PATH: {self.settings.SMTP_CA_CERT_PATH}")
+            logger.debug(f"SMTP_SERVER: {self.settings.SMTP_SERVER} | SMTP_PORT: {self.settings.SMTP_PORT} | SMTP_USERNAME: {self.settings.SMTP_USERNAME} | SMTP_FROM_EMAIL: {self.settings.SMTP_FROM_EMAIL}")
+            logger.debug(f"TLS MODE: {tls_mode}")
             # ── Mode: STARTTLS (upgrade plain → encrypted) ─────────
             if tls_mode == "starttls":
                 logger.info(f"Using STARTTLS on port {self.smtp_port}")
@@ -176,6 +178,14 @@ class SMTPEmailSender:
             return {
                 "success": False,
                 "message": "SMTP authentication failed. Check credentials or use Gmail App Password.",
+                "timestamp": datetime.utcnow().isoformat()
+            }
+
+        except aiosmtplib.SMTPConnectError as error:
+            logger.error(f"❌ SMTP connect error: {error}")
+            return {
+                "success": False,
+                "message": f"SMTP connect error: {str(error)}",
                 "timestamp": datetime.utcnow().isoformat()
             }
         

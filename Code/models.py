@@ -6,7 +6,7 @@ response serialization across all API endpoints.
 """
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Union
 
 
 # ============================================================================
@@ -26,7 +26,10 @@ class SendEmailRequest(BaseModel):
     (owner group name resolved from the contacts file).
     """
     to: Optional[List[EmailStr]] = Field(None, description="List of recipient email addresses")
-    owner: Optional[str] = Field(None, description="Owner group name to resolve recipients from contacts file")
+    owner: Optional[Union[str, List[str]]] = Field(
+        None,
+        description="Owner group name (string) or list of group names to resolve recipients from contacts file"
+    )
     subject: str = Field(..., min_length=1, max_length=255, description="Email subject")
     body: str = Field(..., min_length=1, description="Email body (HTML or plain text)")
     cc: Optional[List[EmailStr]] = Field(None, description="CC recipients")
@@ -36,24 +39,50 @@ class SendEmailRequest(BaseModel):
     @model_validator(mode="after")
     def check_exactly_one_recipient_source(self):
         has_to = bool(self.to and len(self.to) > 0)
-        has_owner = bool(self.owner and len(self.owner.strip()) > 0)
-        
+        if isinstance(self.owner, list):
+            has_owner = bool(self.owner and len(self.owner) > 0)
+        else:
+            has_owner = bool(self.owner and len(self.owner.strip()) > 0)
+
         if has_to and has_owner:
             raise ValueError("You must provide either 'to' or 'owner', but not both.")
         if not has_to and not has_owner:
-            raise ValueError("You must provide exactly one of 'to' (at least 1 email) or 'owner' (valid string).")
+            raise ValueError("You must provide exactly one of 'to' (at least 1 email) or 'owner' (valid string or non-empty list).")
         return self
     
     class Config:
         json_schema_extra = {
-            "example": {
-                "to": ["recipient@example.com"],
-                "subject": "Test Email",
-                "body": "<h1>Hello</h1><p>This is a test email</p>",
-                "cc": None,
-                "bcc": None,
-                "is_html": True
-            }
+            "examples": [
+                {
+                    "summary": "Direct recipients",
+                    "value": {
+                        "to": ["recipient@example.com"],
+                        "subject": "Test Email",
+                        "body": "<h1>Hello</h1><p>This is a test email</p>",
+                        "cc": None,
+                        "bcc": None,
+                        "is_html": True
+                    }
+                },
+                {
+                    "summary": "Single owner group",
+                    "value": {
+                        "owner": "it_team",
+                        "subject": "Test Email",
+                        "body": "<h1>Hello</h1>",
+                        "is_html": True
+                    }
+                },
+                {
+                    "summary": "Multiple owner groups",
+                    "value": {
+                        "owner": ["it_team", "dev_team"],
+                        "subject": "Test Email",
+                        "body": "<h1>Hello</h1>",
+                        "is_html": True
+                    }
+                }
+            ]
         }
 
 class SendEmailResponse(BaseModel):
@@ -76,28 +105,55 @@ class SendSmsRequest(BaseModel):
       1 = ID number (Teudat Zehut)
     """
     recipient: Optional[str] = Field(None, description="Phone number or ID of the recipient")
-    owner: Optional[str] = Field(None, description="Owner group name to resolve recipients from contacts file")
+    owner: Optional[Union[str, List[str]]] = Field(
+        None,
+        description="Owner group name (string) or list of group names to resolve recipients from contacts file"
+    )
     text: str = Field(..., min_length=1, description="SMS message content")
     recipient_type: int = Field(0, description="0 for standard, 1 for ID Teudat Zehut")
 
     @model_validator(mode="after")
     def check_exactly_one_recipient_source(self):
         has_recipient = bool(self.recipient and len(self.recipient.strip()) > 0)
-        has_owner = bool(self.owner and len(self.owner.strip()) > 0)
-        
+        if isinstance(self.owner, list):
+            has_owner = bool(self.owner and len(self.owner) > 0)
+        else:
+            has_owner = bool(self.owner and len(self.owner.strip()) > 0)
+
         if has_recipient and has_owner:
             raise ValueError("You must provide either 'recipient' or 'owner', but not both.")
         if not has_recipient and not has_owner:
-            raise ValueError("You must provide exactly one of 'recipient' (valid string) or 'owner' (valid string).")
+            raise ValueError("You must provide exactly one of 'recipient' (valid string) or 'owner' (valid string or non-empty list).")
         return self
     
     class Config:
         json_schema_extra = {
-            "example": {
-                "recipient": "0501234567",
-                "text": "Hello this is a test SMS",
-                "recipient_type": 0
-            }
+            "examples": [
+                {
+                    "summary": "Direct recipient",
+                    "value": {
+                        "recipient": "0501234567",
+                        "text": "Hello this is a test SMS",
+                        "recipient_type": 0
+                    }
+                },
+                {
+                    "summary": "Single owner group",
+                    "value": {
+                        "owner": "it_team",
+                        "text": "Hello this is a test SMS",
+                        "recipient_type": 0
+                    }
+                },
+                {
+                    "summary": "Multiple owner groups",
+                    "value": {
+                        "owner": ["it_team", "dev_team"],
+                        "text": "Hello this is a test SMS",
+                        "recipient_type": 0
+                    }
+                }
+            ]
         }
 
 class SendSmsResponse(BaseModel):

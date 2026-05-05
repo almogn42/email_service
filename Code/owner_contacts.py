@@ -17,12 +17,21 @@ The JSON structure is:
         ...
     }
 }
+
+Public API
+----------
+- get_owner_emails(owner_name)  → emails for a single group
+- get_owner_phones(owner_name)  → phones for a single group
+- resolve_emails(owner)         → emails for one or more groups (deduped)
+- resolve_phones(owner)         → phones for one or more groups (deduped)
+- save_contacts(data)           → overwrite the contacts file
+- get_all_contacts()            → full contacts dict
 """
 
 import json
 import logging
 import os
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +116,58 @@ def get_owner_phones(owner_name: str) -> List[str]:
         raise ValueError(f"No phone numbers found for owner group '{owner_name}'.")
 
     return phones
+
+
+def resolve_emails(owner: Union[str, List[str]]) -> List[str]:
+    """
+    Resolve one or more owner group names to a deduplicated list of emails.
+
+    Args:
+        owner: A single group name string, or a list of group name strings.
+
+    Returns:
+        Deduplicated list of email addresses from all specified groups,
+        in the order they are encountered.
+
+    Raises:
+        ValueError: If any group is not found or has no contacts with emails.
+    """
+    names = [owner] if isinstance(owner, str) else owner
+    result: List[str] = []
+    seen: set = set()
+    for name in names:
+        for email in get_owner_emails(name):
+            if email not in seen:
+                seen.add(email)
+                result.append(email)
+    logger.debug(f"resolve_emails({owner!r}) → {result}")
+    return result
+
+
+def resolve_phones(owner: Union[str, List[str]]) -> List[str]:
+    """
+    Resolve one or more owner group names to a deduplicated list of phone numbers.
+
+    Args:
+        owner: A single group name string, or a list of group name strings.
+
+    Returns:
+        Deduplicated list of phone numbers from all specified groups,
+        in the order they are encountered.
+
+    Raises:
+        ValueError: If any group is not found or has no contacts with phone numbers.
+    """
+    names = [owner] if isinstance(owner, str) else owner
+    result: List[str] = []
+    seen: set = set()
+    for name in names:
+        for phone in get_owner_phones(name):
+            if phone not in seen:
+                seen.add(phone)
+                result.append(phone)
+    logger.debug(f"resolve_phones({owner!r}) → {result}")
+    return result
 
 
 def save_contacts(data: Dict[str, Any]) -> None:

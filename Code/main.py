@@ -157,7 +157,7 @@ async def send_email(
     
     # Resolve recipients
     try:
-        to_addresses = owner_contacts.get_owner_emails(request.owner) if request.owner else request.to
+        to_addresses = owner_contacts.resolve_emails(request.owner) if request.owner else request.to
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -215,10 +215,17 @@ async def send_email_with_token(
     ```
     """
     logger.info(f"Email send request with token: {token[:10]}...")
-    logger.info(f"Recipients: {request.to}")
+
+    # Resolve recipients
+    try:
+        to_addresses = owner_contacts.resolve_emails(request.owner) if request.owner else request.to
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    logger.info(f"Resolved Recipients: {to_addresses}")
     
     result = await email_sender.send_email(
-        to_addresses=request.to,
+        to_addresses=to_addresses,
         subject=request.subject,
         body=request.body,
         cc_addresses=request.cc,
@@ -271,7 +278,7 @@ async def send_sms(
     
     # Resolve recipients
     try:
-        recipients = owner_contacts.get_owner_phones(request.owner) if request.owner else [request.recipient]
+        recipients = owner_contacts.resolve_phones(request.owner) if request.owner else [request.recipient]
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -331,7 +338,7 @@ async def send_sms_with_token(
     
     # Resolve recipients
     try:
-        recipients = owner_contacts.get_owner_phones(request.owner) if request.owner else [request.recipient]
+        recipients = owner_contacts.resolve_phones(request.owner) if request.owner else [request.recipient]
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

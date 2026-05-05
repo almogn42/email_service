@@ -1,9 +1,15 @@
 {
     "Owners": {
-        "almog_test": {
+        "it_team": {
             "almog": {
                 "email": "almog@example.com",
                 "phone_number": "0501234567"
+            }
+        },
+        "dev_team": {
+            "almog": {
+                "email": "almog@example.com",
+                "phone_number": "0546745379"
             }
         }
     }

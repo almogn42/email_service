@@ -5,7 +5,7 @@ Defines all FastAPI routes, middleware, and exception handlers.
 Run directly with: python main.py
 """
 
-from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Body
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -21,6 +21,66 @@ from email_sender import email_sender
 from sms_sender import sms_sender
 from auth import verify_basic_auth, verify_oauth_token
 import owner_contacts
+
+# ── Examples for Swagger UI ──────────────────────────────────────
+EMAIL_EXAMPLES = {
+    "Direct Recipients": {
+        "summary": "Send to specific email addresses",
+        "value": {
+            "to": ["recipient@example.com"],
+            "subject": "Test Email",
+            "body": "<h1>Hello</h1><p>This is a test email</p>",
+            "cc": None,
+            "bcc": None,
+            "is_html": True
+        }
+    },
+    "Single Owner Group": {
+        "summary": "Resolve recipients from a group name",
+        "value": {
+            "owner": "it_team",
+            "subject": "Test Email",
+            "body": "<h1>Hello</h1>",
+            "is_html": True
+        }
+    },
+    "Multiple Owner Groups": {
+        "summary": "Send to multiple groups",
+        "value": {
+            "owner": ["it_team", "dev_team"],
+            "subject": "Test Email",
+            "body": "<h1>Hello</h1>",
+            "is_html": True
+        }
+    }
+}
+
+SMS_EXAMPLES = {
+    "Direct Recipient": {
+        "summary": "Send to a phone number or ID",
+        "value": {
+            "recipient": "0501234567",
+            "text": "Hello this is a test SMS",
+            "recipient_type": 0
+        }
+    },
+    "Single Owner Group": {
+        "summary": "Resolve recipients from a group name",
+        "value": {
+            "owner": "it_team",
+            "text": "Hello this is a test SMS",
+            "recipient_type": 0
+        }
+    },
+    "Multiple Owner Groups": {
+        "summary": "Send to multiple groups",
+        "value": {
+            "owner": ["it_team", "dev_team"],
+            "text": "Hello this is a test SMS",
+            "recipient_type": 0
+        }
+    }
+}
 
 
 # Cached settings instance (shared across all handlers)
@@ -59,6 +119,13 @@ logging.basicConfig(
     handlers=[file_handler, console_handler]
 )
 logger = logging.getLogger(__name__)
+
+# ── Capture Uvicorn Logs ──────────────────────────────────────────
+# Uvicorn uses its own loggers that don't propagate to the root logger.
+# We explicitly attach our file_handler so these logs go to app.log.
+for uvicorn_logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+    uvicorn_logger = logging.getLogger(uvicorn_logger_name)
+    uvicorn_logger.addHandler(file_handler)
 
 # ── FastAPI application instance ──────────────────────────────────
 version = "1.0.3"
@@ -130,7 +197,7 @@ async def get_status(username: str = Depends(verify_basic_auth)):
 
 @app.post("/send-email", response_model=SendEmailResponse, tags=["Email"])
 async def send_email(
-    request: SendEmailRequest,
+    request: SendEmailRequest = Body(..., openapi_examples=EMAIL_EXAMPLES),
     username: str = Depends(verify_basic_auth)
 ):
     """
@@ -191,7 +258,7 @@ async def send_email(
 
 @app.post("/send-email/token", response_model=SendEmailResponse, tags=["Email"])
 async def send_email_with_token(
-    request: SendEmailRequest,
+    request: SendEmailRequest = Body(..., openapi_examples=EMAIL_EXAMPLES),
     token: str = Depends(verify_oauth_token)
 ):
     """
@@ -256,7 +323,7 @@ async def send_email_with_token(
 
 @app.post("/send-sms", response_model=SendSmsResponse, tags=["SMS"])
 async def send_sms(
-    request: SendSmsRequest,
+    request: SendSmsRequest = Body(..., openapi_examples=SMS_EXAMPLES),
     username: str = Depends(verify_basic_auth)
 ):
     """
@@ -316,7 +383,7 @@ async def send_sms(
 
 @app.post("/send-sms/token", response_model=SendSmsResponse, tags=["SMS"])
 async def send_sms_with_token(
-    request: SendSmsRequest,
+    request: SendSmsRequest = Body(..., openapi_examples=SMS_EXAMPLES),
     token: str = Depends(verify_oauth_token)
 ):
     """

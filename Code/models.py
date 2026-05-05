@@ -5,7 +5,7 @@ These models define the JSON schemas used for request validation and
 response serialization across all API endpoints.
 """
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, model_validator, ConfigDict
 from typing import Optional, List, Dict, Union
 
 
@@ -50,40 +50,11 @@ class SendEmailRequest(BaseModel):
             raise ValueError("You must provide exactly one of 'to' (at least 1 email) or 'owner' (valid string or non-empty list).")
         return self
     
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
-            "examples": [
-                {
-                    "summary": "Direct recipients",
-                    "value": {
-                        "to": ["recipient@example.com"],
-                        "subject": "Test Email",
-                        "body": "<h1>Hello</h1><p>This is a test email</p>",
-                        "cc": None,
-                        "bcc": None,
-                        "is_html": True
-                    }
-                },
-                {
-                    "summary": "Single owner group",
-                    "value": {
-                        "owner": "it_team",
-                        "subject": "Test Email",
-                        "body": "<h1>Hello</h1>",
-                        "is_html": True
-                    }
-                },
-                {
-                    "summary": "Multiple owner groups",
-                    "value": {
-                        "owner": ["it_team", "dev_team"],
-                        "subject": "Test Email",
-                        "body": "<h1>Hello</h1>",
-                        "is_html": True
-                    }
-                }
-            ]
+            "description": "Request body for sending an email. Provide either 'to' list or 'owner' group."
         }
+    )
 
 class SendEmailResponse(BaseModel):
     """Standard response returned after an email send attempt."""
@@ -126,35 +97,11 @@ class SendSmsRequest(BaseModel):
             raise ValueError("You must provide exactly one of 'recipient' (valid string) or 'owner' (valid string or non-empty list).")
         return self
     
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
-            "examples": [
-                {
-                    "summary": "Direct recipient",
-                    "value": {
-                        "recipient": "0501234567",
-                        "text": "Hello this is a test SMS",
-                        "recipient_type": 0
-                    }
-                },
-                {
-                    "summary": "Single owner group",
-                    "value": {
-                        "owner": "it_team",
-                        "text": "Hello this is a test SMS",
-                        "recipient_type": 0
-                    }
-                },
-                {
-                    "summary": "Multiple owner groups",
-                    "value": {
-                        "owner": ["it_team", "dev_team"],
-                        "text": "Hello this is a test SMS",
-                        "recipient_type": 0
-                    }
-                }
-            ]
+            "description": "Request body for sending an SMS. Provide either 'recipient' or 'owner' group."
         }
+    )
 
 class SendSmsResponse(BaseModel):
     """Standard response returned after an SMS send attempt."""
@@ -178,7 +125,7 @@ class UploadContactsRequest(BaseModel):
         ..., description="Owner groups with contact details (email, phone_number)"
     )
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "example": {
                 "Owners": {
@@ -191,6 +138,7 @@ class UploadContactsRequest(BaseModel):
                 }
             }
         }
+    )
 
 
 # ============================================================================

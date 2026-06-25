@@ -62,28 +62,37 @@ class SmsSender:
                 "Content-Type": "application/json"
             }
             
-            # ── Build the JSON payload from the template ───────────
-            # Escape double-quotes in dynamic values to prevent
-            # broken JSON when the template is formatted.
-            # safe_text = text.replace('"', '\\"')
-            safe_text = text.replace('\\', '\\\\').replace('"', '\\"')
-            safe_sender = self.sender_name.replace('"', '\\"')
-            safe_app_id = self.app_id.replace('"', '\\"')
-            safe_recipient = recipient.replace('"', '\\"')
-            logger.debug(f"{safe_text} | {safe_sender} | {safe_app_id}| {safe_recipient}| {recipient_type}")
+            # # ── Build the JSON payload from the template ───────────
+            # # Escape double-quotes in dynamic values to prevent
+            # # broken JSON when the template is formatted.
+            # # safe_text = text.replace('"', '\\"')
+            # safe_text = text.replace('\\', '\\\\').replace('"', '\\"')
+            # safe_sender = self.sender_name.replace('"', '\\"')
+            # safe_app_id = self.app_id.replace('"', '\\"')
+            # safe_recipient = recipient.replace('"', '\\"')
+            # logger.debug(f"{safe_text} | {safe_sender} | {safe_app_id}| {safe_recipient}| {recipient_type}")
             
-            # Format the template string with sanitised values
-            payload_str = self.payload_template.format(
-                app_id=safe_app_id,
-                sender_name=safe_sender,
-                text=safe_text,
-                recipient=safe_recipient,
-                recipient_type=recipient_type
-            )
+            # # Format the template string with sanitised values
             
-            # Parse the formatted string into a Python dict
-            logger.debug(f"Payload: {payload_str}")
-            payload = json.loads(payload_str)
+            # payload_str = self.payload_template.format(
+            #     app_id=safe_app_id,
+            #     sender_name=safe_sender,
+            #     text=safe_text,
+            #     recipient=safe_recipient,
+            #     recipient_type=recipient_type
+            # )
+            # populating the payload json (the body)
+            payload = {
+                "applicationId": self.app_id,
+                "smsSenderName": self.sender_name,
+                "smsMessageText": text.replace("\\n", "\n"),
+                "recipient": recipient,
+                "recipientType": recipient_type
+            }
+            logger.debug(f"Payload data: {payload}")
+            # # Parse the formatted string into a Python dict
+            # logger.debug(f"Payload: {payload_str}")
+            # payload = json.loads(payload_str)
             logger.info(f"Sending SMS to {recipient} via {self.api_url}")
             
             # ── Determine SSL verification for httpx ────────────────

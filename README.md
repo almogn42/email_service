@@ -2,6 +2,8 @@
 
 A FastAPI-based microservice for sending **emails** and **SMS messages** via web requests with support for **Basic Authentication** and **Bearer Token (OAuth) Authentication**.
 
+**Current Version:** `1.0.6`
+
 ## Features
 
 ✅ **Dual Authentication Methods**
@@ -12,15 +14,25 @@ A FastAPI-based microservice for sending **emails** and **SMS messages** via web
 - Support for HTML and plain text emails
 - CC and BCC recipients
 - Async SMTP for high performance
+- Configurable TLS mode (`starttls`, `implicit`, `none`, `auto`)
 - Support for custom CA SSL certificates & bypassing validation for internal networks
 
 ✅ **SMS Sending**
 - External SMS gateway integration via HTTP
-- Configurable payload template
+- Configurable payload with OAuth-style headers
 - Support for phone-number and ID-based recipients
+- Custom SSL CA & verification bypass for SMS gateway
 
-✅ **Admin Endpoint**
+✅ **Owner Contacts System**
+- Define named contact groups (e.g. `it_team`, `dev_team`) in a JSON file
+- Send email/SMS to group names instead of hardcoded addresses
+- Admin endpoints to upload and view contacts
+- Supports sending to multiple groups at once (deduplicated)
+
+✅ **Admin Endpoints**
 - `GET /tokens` — view all API tokens (admin-only, Basic Auth)
+- `POST /upload-contacts` — upload/overwrite owner contact list (admin-only)
+- `GET /contacts` — retrieve current owner contact list (admin-only)
 
 ✅ **Auto-Generated API Documentation**
 - Swagger UI at `/docs`
@@ -28,10 +40,11 @@ A FastAPI-based microservice for sending **emails** and **SMS messages** via web
 
 ✅ **Production Ready**
 - Comprehensive error handling
-- Structured logging
+- Structured logging with rotating file handler
 - CORS support
 - Input validation with Pydantic
 - Password hashing (PBKDF2-SHA256)
+- Docker & Docker Compose support
 
 ---
 
@@ -39,7 +52,7 @@ A FastAPI-based microservice for sending **emails** and **SMS messages** via web
 
 ### 1. Clone or navigate to project directory
 ```bash
-cd email_service
+cd email_service/Code
 ```
 
 ### 2. Create virtual environment
@@ -61,7 +74,7 @@ pip install -r requirements.txt
 ### 4. Configure environment
 ```bash
 # Copy example config
-cp .env.example .env
+cp ../Tests_and_examples/.env.example .env
 
 # Edit .env with your SMTP and SMS settings
 # For Gmail:
@@ -98,7 +111,7 @@ curl http://localhost:8000/health
 
 **Endpoint:** `POST /send-email`
 
-**curl example:**
+**Using direct recipients:**
 ```bash
 curl -X POST http://localhost:8000/send-email \
   -H "Content-Type: application/json" \
@@ -107,6 +120,19 @@ curl -X POST http://localhost:8000/send-email \
     "to": ["recipient@example.com"],
     "subject": "Test Email",
     "body": "<h1>Hello!</h1><p>This is a test email</p>",
+    "is_html": true
+  }'
+```
+
+**Using owner group:**
+```bash
+curl -X POST http://localhost:8000/send-email \
+  -H "Content-Type: application/json" \
+  -u "admin:changeme" \
+  -d '{
+    "owner": "it_team",
+    "subject": "Team Alert",
+    "body": "<h1>Alert</h1><p>Sent to all it_team contacts</p>",
     "is_html": true
   }'
 ```
@@ -148,7 +174,6 @@ print(response.json())
 
 **Endpoint:** `POST /send-email/token`
 
-**curl example:**
 ```bash
 curl -X POST http://localhost:8000/send-email/token \
   -H "Content-Type: application/json" \
@@ -167,7 +192,7 @@ curl -X POST http://localhost:8000/send-email/token \
 
 **Endpoint:** `POST /send-sms`
 
-**curl example:**
+**Using direct recipient:**
 ```bash
 curl -X POST http://localhost:8000/send-sms \
   -H "Content-Type: application/json" \
@@ -179,11 +204,23 @@ curl -X POST http://localhost:8000/send-sms \
   }'
 ```
 
+**Using owner group (sends to all phones in the group):**
+```bash
+curl -X POST http://localhost:8000/send-sms \
+  -H "Content-Type: application/json" \
+  -u "admin:changeme" \
+  -d '{
+    "owner": "it_team",
+    "text": "Alert for IT team",
+    "recipient_type": 0
+  }'
+```
+
 **Response:**
 ```json
 {
   "success": true,
-  "message": "SMS sent successfully",
+  "message": "SMS sent successfully to 3/3 recipients",
   "message_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "timestamp": "2026-03-25T10:30:45.123456"
 }
@@ -195,7 +232,6 @@ curl -X POST http://localhost:8000/send-sms \
 
 **Endpoint:** `POST /send-sms/token`
 
-**curl example:**
 ```bash
 curl -X POST http://localhost:8000/send-sms/token \
   -H "Content-Type: application/json" \
@@ -209,7 +245,60 @@ curl -X POST http://localhost:8000/send-sms/token \
 
 ---
 
-### 6. Get API Tokens (Admin Only)
+### 6. Upload Contacts (Admin Only)
+
+**Endpoint:** `POST /upload-contacts`
+
+Upload or overwrite the owner contacts JSON file. Restricted to the `admin` user only.
+
+```bash
+curl -X POST http://localhost:8000/upload-contacts \
+  -H "Content-Type: application/json" \
+  -u "admin:changeme" \
+  -d '{
+    "Owners": {
+      "it_team": {
+        "almog": {
+          "email": "almog@example.com",
+          "phone_number": "0501234567"
+        },
+        "dana": {
+          "email": "dana@example.com",
+          "phone_number": "0509876543"
+        }
+      },
+      "dev_team": {
+        "yosi": {
+          "email": "yosi@example.com",
+          "phone_number": "0521111111"
+        }
+      }
+    }
+  }'
+```
+
+**Response:**
+```json
+{
+  "message": "Contacts saved successfully"
+}
+```
+
+---
+
+### 7. Get Contacts (Admin Only)
+
+**Endpoint:** `GET /contacts`
+
+Retrieve the current owner contacts list. Restricted to the `admin` user only.
+
+```bash
+curl -u admin:changeme http://localhost:8000/contacts
+```
+
+---
+
+### 8. Get API Tokens (Admin Only)
 
 **Endpoint:** `GET /tokens`
 
@@ -231,7 +320,7 @@ curl -u admin:changeme http://localhost:8000/tokens
 
 ---
 
-### 7. Get Service Status (Requires Auth)
+### 9. Get Service Status (Requires Auth)
 
 **Endpoint:** `GET /status`
 
@@ -246,6 +335,8 @@ curl http://localhost:8000/status \
 
 ### SendEmailRequest
 
+You must provide **exactly one** of `to` (direct email list) **or** `owner` (group name). Providing both or neither returns `422`.
+
 ```json
 {
   "to": ["recipient1@example.com", "recipient2@example.com"],
@@ -257,15 +348,29 @@ curl http://localhost:8000/status \
 }
 ```
 
+**or using owner groups:**
+
+```json
+{
+  "owner": "it_team",
+  "subject": "Email Subject",
+  "body": "Email body content",
+  "is_html": true
+}
+```
+
 **Fields:**
-- `to` *(required)* — List of recipient email addresses
-- `subject` *(required)* — Email subject (1-255 characters)
+- `to` *(optional)* — List of recipient email addresses (mutually exclusive with `owner`)
+- `owner` *(optional)* — Owner group name (string) or list of group names to resolve recipients from the contacts file (mutually exclusive with `to`)
+- `subject` *(required)* — Email subject (1–255 characters)
 - `body` *(required)* — Email body content
 - `cc` *(optional)* — List of CC recipients
 - `bcc` *(optional)* — List of BCC recipients
 - `is_html` *(optional, default: true)* — Content type (HTML or plain text)
 
 ### SendSmsRequest
+
+You must provide **exactly one** of `recipient` (direct phone/ID) **or** `owner` (group name). Providing both or neither returns `422`.
 
 ```json
 {
@@ -275,10 +380,36 @@ curl http://localhost:8000/status \
 }
 ```
 
+**or using owner groups:**
+
+```json
+{
+  "owner": ["it_team", "dev_team"],
+  "text": "Alert message",
+  "recipient_type": 0
+}
+```
+
 **Fields:**
-- `recipient` *(required)* — Phone number or ID number
+- `recipient` *(optional)* — Phone number or ID number (mutually exclusive with `owner`)
+- `owner` *(optional)* — Owner group name or list of group names (mutually exclusive with `recipient`)
 - `text` *(required)* — SMS message content
 - `recipient_type` *(optional, default: 0)* — 0 = phone number, 1 = ID (Teudat Zehut)
+
+### UploadContactsRequest
+
+```json
+{
+  "Owners": {
+    "<group_name>": {
+      "<contact_name>": {
+        "email": "contact@example.com",
+        "phone_number": "0501234567"
+      }
+    }
+  }
+}
+```
 
 ---
 
@@ -287,16 +418,24 @@ curl http://localhost:8000/status \
 Edit `.env` file or environment variables:
 
 ```env
-# SMTP Configuration
+# ── General Service Settings ───────────────────────────────────
+SERVICE_NAME=Email Service
+DEBUG=False
+LOG_LEVEL=info                              # Options: info, error, debug
+
+# ── SMTP (Email) Settings ──────────────────────────────────────
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
+SMTP_TLS_MODE=auto                          # Options: starttls, implicit, none, auto
 SMTP_USERNAME=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
 SMTP_FROM_EMAIL=your-email@gmail.com
-SMTP_SSL_VERIFY=True                       # Optional: Set False to bypass SSL validation
-SMTP_CA_CERT_PATH=                         # Optional: Path to custom .pem/.crt CA file
 
-# SMS Configuration
+# ── SMTP SSL / Verification Settings ──────────────────────────
+SMTP_SSL_VERIFY=True                        # Set False to bypass SSL validation
+SMTP_CA_CERT_PATH=                          # Path to custom .pem/.crt CA file
+
+# ── SMS Gateway Settings ──────────────────────────────────────
 SMS_API_URL=http://your-sms-gateway/sms-api
 SMS_CLIENT_ID=your-client-id
 SMS_CLIENT_SECRET=your-client-secret
@@ -304,12 +443,25 @@ SMS_SCOPE=your-scope
 SMS_APP_ID=your-app-id
 SMS_SENDER_NAME=YourApp
 
-# Basic Auth Users
+# ── SMS SSL / Verification Settings ───────────────────────────
+SMS_SSL_VERIFY=True                         # Set False to bypass SSL for SMS gateway
+SMS_CA_CERT_PATH=                           # Path to custom CA for SMS gateway
+
+# ── Basic Auth Users ──────────────────────────────────────────
 BASIC_AUTH_USERS={"admin": "changeme", "user1": "password123"}
 
-# API Tokens
+# ── API Tokens ────────────────────────────────────────────────
 API_TOKENS=["token1", "token2"]
 ```
+
+### SMTP TLS Modes
+
+| Mode | Port | Description |
+|------|------|-------------|
+| `auto` | any | Auto-detects based on port (587→starttls, 465→implicit, 25→none) |
+| `starttls` | 587 | Upgrades plain connection to encrypted via STARTTLS |
+| `implicit` | 465 | Connects with SSL/TLS from the start |
+| `none` | 25 | Plain text, no encryption (not recommended) |
 
 ### For Different SMTP Providers
 
@@ -344,12 +496,12 @@ docker build -t email-sms-service .
 docker run -p 8000:8000 --env-file .env email-sms-service
 ```
 
-### Option B: Running from the compiled image tarball
-If you have the compiled image file, you can load and run it without building:
+### Option B: Running from a compiled image tarball
+If you have a pre-built image tarball in `Compiled image/`, you can load and run it without building:
 
 1. Load the image into Docker:
 ```bash
-docker load -i "Compiled image/email-sms-service_1.0.2_image.tar"
+docker load -i "Compiled image/<image-file>.tar"
 ```
 
 2. Run the container (make sure your `.env` file is ready):
@@ -357,10 +509,9 @@ docker load -i "Compiled image/email-sms-service_1.0.2_image.tar"
 docker run -d \
   --name email-sms-service \
   -p 8000:8000 \
-  -p 25:25 \
   --env-file .env \
   -v ./logs:/app/logs \
-  email-sms-service:1.0.2
+  email-sms-service
 ```
 > **Custom SSL Certificates**: If using a custom CA file (`SMTP_CA_CERT_PATH`), mount the certificate into the container:
 > `docker run -p 8000:8000 --env-file .env -v /local/path/to/cert.pem:/app/cert.pem email-sms-service` and set `SMTP_CA_CERT_PATH=/app/cert.pem` in `.env`.
@@ -377,23 +528,35 @@ docker-compose up
 
 ```
 email_service/
-├── main.py              # FastAPI application & routes
-├── config.py            # Configuration & settings
-├── auth.py              # Authentication logic (Basic & Bearer)
-├── models.py            # Pydantic models for requests/responses
-├── email_sender.py      # SMTP email sending logic
-├── sms_sender.py        # SMS gateway sending logic
-├── requirements.txt     # Python dependencies
-├── Dockerfile           # Container definition
-├── docker-compose.yml   # Docker Compose config
-├── .env                 # Runtime configuration (secrets)
-├── .env.example         # Config template
-└── instractions/        # Documentation
-    ├── README.md
-    ├── ARCHITECTURE.md
-    ├── PROJECT_SUMMARY.md
-    ├── QUICKSTART.md
-    └── FRAMEWORK_ANALYSIS.md
+├── Code/                     # Application source code
+│   ├── main.py               # FastAPI application & routes (entry point)
+│   ├── config.py             # Configuration & settings (Pydantic)
+│   ├── auth.py               # Authentication logic (Basic & Bearer)
+│   ├── models.py             # Pydantic request/response models
+│   ├── email_sender.py       # Async SMTP email sending logic
+│   ├── sms_sender.py         # Async SMS gateway sending logic
+│   ├── owner_contacts.py     # Owner contact groups registry
+│   ├── data/
+│   │   └── contacts.json     # Owner contacts data file
+│   ├── requirements.txt      # Python dependencies
+│   ├── Dockerfile            # Container definition
+│   ├── docker-compose.yml    # Docker Compose config
+│   ├── .env                  # Runtime configuration (secrets — not committed)
+│   ├── CHANGELOG.md          # Version history & change notes
+│   └── logs/                 # Rotating log files (app.log, auto-created)
+├── Tests_and_examples/       # Tests & usage examples
+│   ├── examples.py           # Python usage examples
+│   ├── test_email_service.py # Pytest unit tests
+│   ├── docker-compose.yaml   # Compose file for running tests
+│   └── .env.example          # Config template (copy to Code/.env to start)
+├── Compiled image/           # Pre-built Docker image tarballs (v1.0.2)
+│   ├── email-sms-service_1.0.2_image.tar
+│   └── email-sms-service_1.0.2_image.zip
+├── test server_sms/          # Local test SMS server for development
+├── instractions/             # Documentation
+│   ├── ARCHITECTURE.md       # System architecture & design
+│   └── QUICKSTART.md         # Getting started guide
+└── README.md                 # This file
 ```
 
 ---

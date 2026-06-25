@@ -1,0 +1,147 @@
+2026-06-18 11:51:14,884 - asyncio - DEBUG - Using selector: SelectSelector
+2026-06-18 11:51:14,956 - uvicorn.error - INFO - Started server process [21688]
+2026-06-18 11:51:14,956 - uvicorn.error - INFO - Started server process [21688]
+2026-06-18 11:51:14,957 - uvicorn.error - INFO - Waiting for application startup.
+2026-06-18 11:51:14,957 - uvicorn.error - INFO - Waiting for application startup.
+2026-06-18 11:51:14,959 - uvicorn.error - INFO - Application startup complete.
+2026-06-18 11:51:14,959 - uvicorn.error - INFO - Application startup complete.
+2026-06-18 11:51:55,333 - uvicorn.access - INFO - 127.0.0.1:63770 - "GET /docs HTTP/1.1" 200
+2026-06-18 11:51:56,958 - uvicorn.access - INFO - 127.0.0.1:63770 - "GET /openapi.json HTTP/1.1" 200
+2026-06-18 11:53:50,898 - uvicorn.access - INFO - 127.0.0.1:56915 - "POST /send-sms HTTP/1.1" 422
+2026-06-18 11:54:07,380 - uvicorn.access - INFO - 127.0.0.1:63332 - "POST /send-sms HTTP/1.1" 401
+2026-06-18 11:54:46,759 - uvicorn.error - INFO - Shutting down
+2026-06-18 11:54:46,759 - uvicorn.error - INFO - Shutting down
+2026-06-18 11:54:46,866 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-06-18 11:54:46,866 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-06-18 11:54:46,866 - uvicorn.error - INFO - Application shutdown complete.
+2026-06-18 11:54:46,866 - uvicorn.error - INFO - Application shutdown complete.
+2026-06-18 11:54:46,867 - uvicorn.error - INFO - Finished server process [21688]
+2026-06-18 11:54:46,867 - uvicorn.error - INFO - Finished server process [21688]
+2026-06-18 11:54:52,155 - asyncio - DEBUG - Using selector: SelectSelector
+2026-06-18 11:54:52,196 - uvicorn.error - INFO - Started server process [20844]
+2026-06-18 11:54:52,196 - uvicorn.error - INFO - Started server process [20844]
+2026-06-18 11:54:52,196 - uvicorn.error - INFO - Waiting for application startup.
+2026-06-18 11:54:52,196 - uvicorn.error - INFO - Waiting for application startup.
+2026-06-18 11:54:52,197 - uvicorn.error - INFO - Application startup complete.
+2026-06-18 11:54:52,197 - uvicorn.error - INFO - Application startup complete.
+2026-06-18 11:54:57,028 - uvicorn.access - INFO - 127.0.0.1:53283 - "POST /send-sms HTTP/1.1" 401
+2026-06-18 11:55:20,368 - main - INFO - SMS send request from user: admin
+2026-06-18 11:55:20,368 - main - INFO - Resolved SMS Recipients: ['0501234567']
+2026-06-18 11:55:20,368 - sms_sender - DEBUG - this is a test `nTest 2 `nHi Almog `nWhatsApp | From_envVar | test_id| 0501234567| 0
+2026-06-18 11:55:20,369 - sms_sender - DEBUG - Payload: {"applicationId": "test_id", "smsSenderName": "From_envVar", "smsMessageText": "this is a test `nTest 2 `nHi Almog `nWhatsApp", "recipient": "0501234567", "recipientType": 0}
+2026-06-18 11:55:20,369 - sms_sender - INFO - Sending SMS to 0501234567 via http://localhost:8080/sms-api
+2026-06-18 11:55:20,370 - sms_sender - DEBUG - Verify: True
+2026-06-18 11:55:20,371 - httpx - DEBUG - load_ssl_context verify=True cert=None trust_env=True http2=False
+2026-06-18 11:55:20,386 - httpx - DEBUG - load_verify_locations cafile='C:\\Users\\P0039288\\OneDrive - Ness Israel\\מסמכים\\משרד בתי המשפט\\email_service\\.venv\\Lib\\site-packages\\certifi\\cacert.pem'
+2026-06-18 11:55:21,038 - httpcore.connection - DEBUG - connect_tcp.started host='localhost' port=8080 local_address=None timeout=10.0 socket_options=None
+2026-06-18 11:55:21,304 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x00000207B5017890>
+2026-06-18 11:55:21,304 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-06-18 11:55:21,304 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-06-18 11:55:21,304 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-06-18 11:55:21,308 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-06-18 11:55:21,308 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-06-18 11:55:21,310 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Server', b'Werkzeug/3.1.6 Python/3.12.9'), (b'Date', b'Thu, 18 Jun 2026 08:55:21 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'187'), (b'Connection', b'close')])
+2026-06-18 11:55:21,311 - httpx - INFO - HTTP Request: POST http://localhost:8080/sms-api "HTTP/1.1 200 OK"
+2026-06-18 11:55:21,311 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-06-18 11:55:21,313 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-06-18 11:55:21,314 - httpcore.http11 - DEBUG - response_closed.started
+2026-06-18 11:55:21,315 - httpcore.http11 - DEBUG - response_closed.complete
+2026-06-18 11:55:21,315 - sms_sender - INFO -  SMS sent successfully. Message ID: b15ac678-298c-4ba4-a337-ca408b58fcb8
+2026-06-18 11:55:21,316 - uvicorn.access - INFO - 127.0.0.1:60478 - "POST /send-sms HTTP/1.1" 200
+2026-06-18 13:40:59,297 - main - INFO - SMS send request from user: admin
+2026-06-18 13:40:59,307 - main - INFO - Resolved SMS Recipients: ['0501234567']
+2026-06-18 13:40:59,310 - sms_sender - DEBUG - this is a test \\nTest 2 \\nHi Almog \\nWhatsApp | From_envVar | test_id| 0501234567| 0
+2026-06-18 13:40:59,312 - sms_sender - DEBUG - Payload: {"applicationId": "test_id", "smsSenderName": "From_envVar", "smsMessageText": "this is a test \\nTest 2 \\nHi Almog \\nWhatsApp", "recipient": "0501234567", "recipientType": 0}
+2026-06-18 13:40:59,314 - sms_sender - INFO - Sending SMS to 0501234567 via http://localhost:8080/sms-api
+2026-06-18 13:40:59,315 - sms_sender - DEBUG - Verify: True
+2026-06-18 13:40:59,326 - httpx - DEBUG - load_ssl_context verify=True cert=None trust_env=True http2=False
+2026-06-18 13:40:59,417 - httpx - DEBUG - load_verify_locations cafile='C:\\Users\\P0039288\\OneDrive - Ness Israel\\מסמכים\\משרד בתי המשפט\\email_service\\.venv\\Lib\\site-packages\\certifi\\cacert.pem'
+2026-06-18 13:41:01,780 - httpcore.connection - DEBUG - connect_tcp.started host='localhost' port=8080 local_address=None timeout=10.0 socket_options=None
+2026-06-18 13:41:02,054 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x00000207B506FD10>
+2026-06-18 13:41:02,094 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-06-18 13:41:02,096 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-06-18 13:41:02,109 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-06-18 13:41:02,121 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-06-18 13:41:02,184 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-06-18 13:41:02,350 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Server', b'Werkzeug/3.1.6 Python/3.12.9'), (b'Date', b'Thu, 18 Jun 2026 10:41:02 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'190'), (b'Connection', b'close')])
+2026-06-18 13:41:02,352 - httpx - INFO - HTTP Request: POST http://localhost:8080/sms-api "HTTP/1.1 200 OK"
+2026-06-18 13:41:02,361 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-06-18 13:41:02,370 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-06-18 13:41:02,375 - httpcore.http11 - DEBUG - response_closed.started
+2026-06-18 13:41:02,380 - httpcore.http11 - DEBUG - response_closed.complete
+2026-06-18 13:41:02,381 - sms_sender - INFO -  SMS sent successfully. Message ID: b8510072-d7e4-4885-9607-da951c6c0318
+2026-06-18 13:41:02,384 - uvicorn.access - INFO - 127.0.0.1:62286 - "POST /send-sms HTTP/1.1" 200
+2026-06-18 15:55:22,006 - asyncio - DEBUG - Using selector: SelectSelector
+2026-06-18 15:55:22,050 - uvicorn.error - INFO - Started server process [25372]
+2026-06-18 15:55:22,050 - uvicorn.error - INFO - Started server process [25372]
+2026-06-18 15:55:22,050 - uvicorn.error - INFO - Waiting for application startup.
+2026-06-18 15:55:22,050 - uvicorn.error - INFO - Waiting for application startup.
+2026-06-18 15:55:22,053 - uvicorn.error - INFO - Application startup complete.
+2026-06-18 15:55:22,053 - uvicorn.error - INFO - Application startup complete.
+2026-06-18 15:55:43,482 - main - INFO - SMS send request from user: admin
+2026-06-18 15:55:43,482 - main - INFO - Resolved SMS Recipients: ['0501234567']
+2026-06-18 15:55:43,483 - sms_sender - DEBUG - Payload data: {'applicationId': 'test_id', 'smsSenderName': 'From_envVar', 'smsMessageText': 'this is a test \\nTest 2 \\nHi Almog \\nWhatsApp', 'recipient': '0501234567', 'recipientType': 0}
+2026-06-18 15:55:43,483 - sms_sender - INFO - Sending SMS to 0501234567 via http://localhost:8080/sms-api
+2026-06-18 15:55:43,484 - sms_sender - DEBUG - Verify: True
+2026-06-18 15:55:43,486 - httpx - DEBUG - load_ssl_context verify=True cert=None trust_env=True http2=False
+2026-06-18 15:55:43,504 - httpx - DEBUG - load_verify_locations cafile='C:\\Users\\P0039288\\OneDrive - Ness Israel\\מסמכים\\משרד בתי המשפט\\email_service\\.venv\\Lib\\site-packages\\certifi\\cacert.pem'
+2026-06-18 15:55:44,579 - httpcore.connection - DEBUG - connect_tcp.started host='localhost' port=8080 local_address=None timeout=10.0 socket_options=None
+2026-06-18 15:55:44,839 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x0000016DA5D751F0>
+2026-06-18 15:55:44,844 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-06-18 15:55:44,845 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-06-18 15:55:44,846 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-06-18 15:55:44,847 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-06-18 15:55:44,847 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-06-18 15:55:44,855 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Server', b'Werkzeug/3.1.6 Python/3.12.9'), (b'Date', b'Thu, 18 Jun 2026 12:55:44 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'190'), (b'Connection', b'close')])
+2026-06-18 15:55:44,860 - httpx - INFO - HTTP Request: POST http://localhost:8080/sms-api "HTTP/1.1 200 OK"
+2026-06-18 15:55:44,860 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-06-18 15:55:44,861 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-06-18 15:55:44,862 - httpcore.http11 - DEBUG - response_closed.started
+2026-06-18 15:55:44,863 - httpcore.http11 - DEBUG - response_closed.complete
+2026-06-18 15:55:44,863 - sms_sender - INFO -  SMS sent successfully. Message ID: 6a5e8c71-a3e0-4298-89f2-24b0e54d8894
+2026-06-18 15:55:44,864 - uvicorn.access - INFO - 127.0.0.1:57552 - "POST /send-sms HTTP/1.1" 200
+2026-06-18 15:57:12,891 - uvicorn.error - INFO - Shutting down
+2026-06-18 15:57:12,891 - uvicorn.error - INFO - Shutting down
+2026-06-18 15:57:13,031 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-06-18 15:57:13,031 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-06-18 15:57:13,050 - uvicorn.error - INFO - Application shutdown complete.
+2026-06-18 15:57:13,050 - uvicorn.error - INFO - Application shutdown complete.
+2026-06-18 15:57:13,057 - uvicorn.error - INFO - Finished server process [25372]
+2026-06-18 15:57:13,057 - uvicorn.error - INFO - Finished server process [25372]
+2026-06-18 15:57:15,728 - asyncio - DEBUG - Using selector: SelectSelector
+2026-06-18 15:57:15,775 - uvicorn.error - INFO - Started server process [13488]
+2026-06-18 15:57:15,775 - uvicorn.error - INFO - Started server process [13488]
+2026-06-18 15:57:15,777 - uvicorn.error - INFO - Waiting for application startup.
+2026-06-18 15:57:15,777 - uvicorn.error - INFO - Waiting for application startup.
+2026-06-18 15:57:15,780 - uvicorn.error - INFO - Application startup complete.
+2026-06-18 15:57:15,780 - uvicorn.error - INFO - Application startup complete.
+2026-06-18 15:57:19,863 - main - INFO - SMS send request from user: admin
+2026-06-18 15:57:19,863 - main - INFO - Resolved SMS Recipients: ['0501234567']
+2026-06-18 15:57:19,864 - sms_sender - DEBUG - Payload data: {'applicationId': 'test_id', 'smsSenderName': 'From_envVar', 'smsMessageText': 'this is a test \nTest 2 \nHi Almog \nWhatsApp', 'recipient': '0501234567', 'recipientType': 0}
+2026-06-18 15:57:19,864 - sms_sender - INFO - Sending SMS to 0501234567 via http://localhost:8080/sms-api
+2026-06-18 15:57:19,864 - sms_sender - DEBUG - Verify: True
+2026-06-18 15:57:19,865 - httpx - DEBUG - load_ssl_context verify=True cert=None trust_env=True http2=False
+2026-06-18 15:57:19,869 - httpx - DEBUG - load_verify_locations cafile='C:\\Users\\P0039288\\OneDrive - Ness Israel\\מסמכים\\משרד בתי המשפט\\email_service\\.venv\\Lib\\site-packages\\certifi\\cacert.pem'
+2026-06-18 15:57:20,733 - httpcore.connection - DEBUG - connect_tcp.started host='localhost' port=8080 local_address=None timeout=10.0 socket_options=None
+2026-06-18 15:57:21,011 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x0000022AA3FC71A0>
+2026-06-18 15:57:21,012 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2026-06-18 15:57:21,013 - httpcore.http11 - DEBUG - send_request_headers.complete
+2026-06-18 15:57:21,014 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2026-06-18 15:57:21,014 - httpcore.http11 - DEBUG - send_request_body.complete
+2026-06-18 15:57:21,016 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2026-06-18 15:57:21,017 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Server', b'Werkzeug/3.1.6 Python/3.12.9'), (b'Date', b'Thu, 18 Jun 2026 12:57:21 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'187'), (b'Connection', b'close')])
+2026-06-18 15:57:21,018 - httpx - INFO - HTTP Request: POST http://localhost:8080/sms-api "HTTP/1.1 200 OK"
+2026-06-18 15:57:21,020 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2026-06-18 15:57:21,022 - httpcore.http11 - DEBUG - receive_response_body.complete
+2026-06-18 15:57:21,023 - httpcore.http11 - DEBUG - response_closed.started
+2026-06-18 15:57:21,023 - httpcore.http11 - DEBUG - response_closed.complete
+2026-06-18 15:57:21,024 - sms_sender - INFO -  SMS sent successfully. Message ID: 9ab3869f-e5e1-46e8-a708-503959383f4d
+2026-06-18 15:57:21,028 - uvicorn.access - INFO - 127.0.0.1:51285 - "POST /send-sms HTTP/1.1" 200
+2026-06-18 16:52:10,190 - uvicorn.error - INFO - Shutting down
+2026-06-18 16:52:10,190 - uvicorn.error - INFO - Shutting down
+2026-06-18 16:52:10,335 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-06-18 16:52:10,335 - uvicorn.error - INFO - Waiting for application shutdown.
+2026-06-18 16:52:10,344 - uvicorn.error - INFO - Application shutdown complete.
+2026-06-18 16:52:10,344 - uvicorn.error - INFO - Application shutdown complete.
+2026-06-18 16:52:10,345 - uvicorn.error - INFO - Finished server process [13488]
+2026-06-18 16:52:10,345 - uvicorn.error - INFO - Finished server process [13488]

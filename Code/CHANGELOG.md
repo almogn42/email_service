@@ -1,5 +1,58 @@
 # Changelog
 
+## [1.0.5] — 2026-06-25
+
+### Uvicorn Web Server Logs Captured to App Log File
+
+**Problem:**
+Uvicorn (the ASGI web server) has its own internal loggers (`uvicorn`, `uvicorn.error`, `uvicorn.access`) that do not propagate to the root Python logger by default. This meant HTTP access logs (incoming request lines, response status codes) were only printed to the console and were never written to `logs/app.log`.
+
+**Fix — `main.py`:**
+After setting up the `RotatingFileHandler`, all three Uvicorn loggers are explicitly given the same handler:
+```python
+for uvicorn_logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+    uvicorn_logger = logging.getLogger(uvicorn_logger_name)
+    uvicorn_logger.addHandler(file_handler)
+```
+Console output and the `logs/app.log` file now contain identical log lines.
+
+### Swagger UI Examples
+Added rich `openapi_examples` for all POST endpoints (`/send-email`, `/send-email/token`, `/send-sms`, `/send-sms/token`) so the Swagger UI at `/docs` shows three pre-filled example payloads: *Direct Recipients*, *Single Owner Group*, and *Multiple Owner Groups*.
+
+---
+
+## [1.0.3] — 2026-05-15
+
+### Multi-Owner Support + SMS SSL + Owner Bug Fix
+
+#### Multi-Owner Support
+The `owner` field on both `SendEmailRequest` and `SendSmsRequest` now accepts either a **single group name** (string) or a **list of group names**:
+
+```json
+{ "owner": "it_team", ... }          // single group — unchanged
+{ "owner": ["it_team", "dev_team"], ... }  // multiple groups — new
+```
+
+Recipients from all specified groups are merged and **deduplicated** before sending. Implemented in `models.py` (`Union[str, List[str]]`), `owner_contacts.py` (`resolve_emails()`, `resolve_phones()`), and `main.py` handlers.
+
+#### Bug Fix — `/send-sms/token` ignored `owner`
+The `/send-sms/token` (Bearer token) endpoint was sending to `request.recipient` unconditionally, ignoring any `owner` value. Fixed by adding the same `resolve_phones(request.owner) if request.owner` logic that the Basic Auth endpoint already had.
+
+#### SSL / CA Certificate Support for SMS Gateway
+Two new settings control TLS behaviour when calling the external SMS gateway:
+
+| Setting | Default | Description |
+|---|---|---|
+| `SMS_SSL_VERIFY` | `True` | Set `False` to disable SSL certificate verification for the SMS gateway |
+| `SMS_CA_CERT_PATH` | `""` | Path to a custom CA certificate file (`.pem` / `.crt`) for the SMS gateway |
+
+`httpx` is configured at call time based on these values:
+- `SMS_SSL_VERIFY=True` + empty `SMS_CA_CERT_PATH` → system CA bundle (default)
+- `SMS_CA_CERT_PATH` set → uses the specified CA file
+- `SMS_SSL_VERIFY=False` → disables all certificate validation (development/testing only)
+
+---
+
 ## [1.0.4] — 2026-04-26
 
 ### 🐛 Bug Fix — Logs were not written to file

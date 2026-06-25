@@ -15,7 +15,8 @@ def get_sms():
     flask.request.headers
     # result = requests.post("http://localhost:8000/send-sms", json=data)
     # return result.json()
-    return "sms recived!!"
+    # return "sms recived!!"
+    return data
 
 if __name__ == "__main__":
     # app.run(debug=True, port=8080, host="0.0.0.0")

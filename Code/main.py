@@ -128,7 +128,7 @@ for uvicorn_logger_name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
     uvicorn_logger.addHandler(file_handler)
 
 # ── FastAPI application instance ──────────────────────────────────
-version = "1.0.3"
+version = "1.0.6"
 
 app = FastAPI(
     title="Email & SMS Service API",
